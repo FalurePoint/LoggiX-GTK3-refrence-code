@@ -1,13 +1,17 @@
 from assets.extentions import *  # Import extra scripts from extention folder
 import gi  # import Gtk
 import webbrowser
+import os
 
 gi.require_version('Gtk', "3.0")
 from gi.repository import Gtk as gtk  # Require Gtk3+ and import it as "gtk"
 
 # Global variables
-gui_files = "assets/UI/LoggiX_UI_2.0.glade"
-log_path = "assets/contacts.hlf"
+current_path = os.path.abspath(__file__)
+parent_path = os.path.dirname(os.path.dirname(current_path))
+gui_files = parent_path + "/LoggiX/assets/UI/LoggiX_UI_2.0.glade"
+log_path = parent_path + "/LoggiX/assets/contacts.hlf"
+print(parent_path)
 
 veiw_page_root = 1
 starting_page_number = 1
