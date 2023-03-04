@@ -1,8 +1,12 @@
 # LoggiX-Logging-software
  Free radio logging software for the Gnome desktop!
  
- Written in python by Asa Lorentzen KL5IS.
- 
+ Written by: (We mix it up a lot this is just in general)
+ Asa Lorentzen (main development)
+ Daniel Weinhold (Bash files)
+ Carlos Marrero (Art Design)
+
+
  Current release versions:
    GUI: 2.2 Beta (1.x was discontinued before release, lots of bugs)
    Software: 1.0 Beta
@@ -15,7 +19,7 @@
  
 WARNING: This project is a WIP at the moment and although Qrz.com/LoTw integration is a goal the code to do it has not even been started on yet.
 
-I plan to add Qrz.com myself if anyone wants to start working on it before i get a chance to buy XML on QRZ please feel free to pull request your work!
+I plan to add Qrz.com myself but if anyone wants to start working on it before I get a chance to buy XML on QRZ please feel free to pull request your work!
 
 If anyone knows how to get LoTw to work I would love you to pull request that to! I am willing to add you to the creators list in "about software" for this contribution if you like.
 

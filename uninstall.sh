@@ -8,6 +8,7 @@ rm -r ~/.local/share/applications/LoggiX
 
 
 rm ~/Desktop/LoggiX-Development.desktop
+rm ~/.local/share/applications/LoggiX-Development.desktop
 
 
 
