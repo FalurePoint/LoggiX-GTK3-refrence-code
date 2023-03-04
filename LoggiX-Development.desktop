@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=LoggiX Development Beta
+Version=-1.0
+Icon=applications-science
+Exec=python3 '/home/ace/Documents/GitHub/LoggiX-Logging-software/LoggiX/Main.py'
+Terminal=false
+Type=Application
+StartupNotify=true
