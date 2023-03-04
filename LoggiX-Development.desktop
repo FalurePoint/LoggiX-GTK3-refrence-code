@@ -6,3 +6,17 @@ Exec=python3 '/home/ace/Documents/GitHub/LoggiX-Logging-software/LoggiX/Main.py'
 Terminal=false
 Type=Application
 StartupNotify=true
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=python3 /home/ace/.local/share/applications/LoggiX/Main.py
+Name=LoggiX Development Beta
+Icon=applications-science
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=python3 /home/ace/.local/share/applications/LoggiX/Main.py
+Name=LoggiX Development Beta
+Icon=applications-science

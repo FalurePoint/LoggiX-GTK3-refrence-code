@@ -1,25 +1,30 @@
-from assets.extentions import *  # Import extra scripts from extention folder
-import gi  # import Gtk
+# Import extra scripts from extention folder
+from assets.extentions import *
+
+# import Gtk
+import gi
 import webbrowser
 import os
 
+# Require Gtk3+ and import it as "gtk"
 gi.require_version('Gtk', "3.0")
-from gi.repository import Gtk as gtk  # Require Gtk3+ and import it as "gtk"
+from gi.repository import Gtk as gtk
 
 # Global variables
 current_path = os.path.abspath(__file__)
 parent_path = os.path.dirname(os.path.dirname(current_path))
 gui_files = parent_path + "/LoggiX/assets/UI/LoggiX_UI_2.0.glade"
 log_path = parent_path + "/LoggiX/assets/contacts.hlf"
-print(parent_path)
 
+# predefine globals
 veiw_page_root = 1
 starting_page_number = 1
 max_lines = 65
 global_display_string = ""
 
 
-def read_logs():  # Opens the log file and returns the content and line totals in [0] and [1] respectively
+# Opens the log file and returns the content and line totals in [0] and [1] respectively
+def read_logs():
     log_file = open(log_path, "r")  # get the content
     log_data = log_file.read()
     log_file.close()
@@ -30,8 +35,10 @@ def read_logs():  # Opens the log file and returns the content and line totals i
     return log_data, line_count
 
 
-class loggix_main:  # Main class contains most of the code for the application
-    def __init__(self):  # Init or initialize is exactly what it sounds like, it initializes the gui and other major features
+# Main class contains most of the code for the application
+class LoggixMain:
+    # Init or initialize is exactly what it sounds like, it initializes the gui and other major features
+    def __init__(self):
         global gui_files
 
         # Begin GTK
@@ -55,6 +62,7 @@ class loggix_main:  # Main class contains most of the code for the application
         window.connect("delete-event", gtk.main_quit)
         window.show()
 
+    #  refresh data avalible from the gui (will not update gui output widgets)
     def get_objects_update(self):
         # Title
         self.gui_title_banner = self.builder.get_object("title_banner")
@@ -87,6 +95,7 @@ class loggix_main:  # Main class contains most of the code for the application
         self.gui_about_button = self.builder.get_object("options_about_button")
         self.gui_version_notice = self.builder.get_object("options_gui_version_lable")
 
+    # lots of little empty calls at the moment, GUI elements are connected though
     def show_options(self, dummy):
         self.gui_options_dropdown.show_all()
 
@@ -94,17 +103,18 @@ class loggix_main:  # Main class contains most of the code for the application
         About()
 
     def settings_gui(self, dummy):
-        settings_menu()
+        SettingsMenu()
 
     def add_log_file(self, dummy):
-        new_log_window()
+        NewLogWindow()
 
     def open_website(self, dummy):
         webbrowser.open("https://qsl.net/kl5is")
 
+    # devides the total lines buy the amount of lines allow per page defined by the global "max_lines"
     def calculate_pages(self, input_data, dummy=None):
         string_lines = len(input_data.split('\n'))  # find total lines in string by breaking at \n
-        if string_lines < max_lines:  # less then one is over-ridden and 1 is used instead
+        if string_lines < max_lines:  # less then one is over-ridden and 1 is used instead because you can't have data AND 0 pages... :P
             return " 1 "
         else:
             pages = int(string_lines) // max_lines
@@ -112,6 +122,7 @@ class loggix_main:  # Main class contains most of the code for the application
             pages = " " + str(pages) + " "
             return pages
 
+    # pushes new data to self.gui_main_display from a supplyed string or directly from the current .hlf file being used
     def update_log_output(self, content=None, display_range=False, bottom=1, top=max_lines):  # used to write data to the log textveiw in gui, capable of writing a string or pulling from log file.
         global global_display_string
         log_buffer = self.gui_main_display.get_buffer()
@@ -128,11 +139,13 @@ class loggix_main:  # Main class contains most of the code for the application
             else:
                 log_buffer.set_text(content)
 
+    # by defining output as a variable it can be temparaly over-written to alow displaying things such as search resaults from user log search.
     def global_display_is(self, input_data):
         global global_display_string
         global_display_string = input_data
 
-    def update_inputs(self):  # Gets the current states of the inputs from the gui and returns them
+    # gets any new information from text entrys.
+    def update_inputs(self):
         time = self.gui_input_time.get_text().strip()
         date = self.gui_input_date.get_text().strip()
         freq = self.gui_input_freq.get_text().strip()
@@ -145,8 +158,9 @@ class loggix_main:  # Main class contains most of the code for the application
         print("Update to builder input objects finished")
         return time, date, freq, call, power, mode, report, comment, search_querry
 
-    def add_to_log(self, dummy):  # Adds an entry to the log file, currently lacking. Todo: prepend to log,  finish incomplete entry detect, watts slot autofill improvement.
-        values = self.update_inputs()  # stores the data from get_inputs() in value for unpacking in line 121
+    # Adds an entry to the log file, currently lacking. Todo: prepend to log,  finish incomplete entry detect, watts slot autofill improvement.
+    def add_to_log(self, dummy):
+        values = self.update_inputs()  # stores the data from get_inputs() in value for unpacking in line 177
         if values:
             value_id = 0
             incomplete_detect = False
@@ -168,7 +182,8 @@ class loggix_main:  # Main class contains most of the code for the application
                 self.global_display_is(read_logs()[0])
                 self.update_log_output(display_range=True, top=max_lines)  # update gui
 
-    def search_logs(self, dummy):  # the search box
+    # parse the log file for lines containing the search term and update the data passed to self.main_display
+    def search_logs(self, dummy):
         search_input = self.update_inputs()
         search_input = f"{search_input[8]}"  # unpack the searchbox from get_inputs()
         if search_input == "":  # if an empty search is initiated then return to main log
@@ -186,6 +201,7 @@ class loggix_main:  # Main class contains most of the code for the application
             self.global_display_is(search_output)
             self.update_log_output(display_range=True, top=max_lines)  # update the gui
 
+    # based on input it calulates what range if lines to display to move forware or back a "page:
     def page_adjust(self, move):  # Change current page in gui to +1 or -1 based on input
         global veiw_page_root
         global starting_page_number
@@ -201,6 +217,7 @@ class loggix_main:  # Main class contains most of the code for the application
             starting_page_number = 1
             self.gui_current_page.set_text(" " + str(starting_page_number) + " ")
 
+    # calls page_adjust corectly for forward one and updates self.gui_current_page.
     def next_page(self, dummy):  # Shift  veiw range up one page
         global veiw_page_root
         bottom_of_page = len(global_display_string.split('\n'))
@@ -209,15 +226,16 @@ class loggix_main:  # Main class contains most of the code for the application
             self.update_log_output(display_range=True, bottom=veiw_page_root, top=veiw_page_root + max_lines)
             self.page_adjust("next")
 
+    # calls page_adjust corectly for backward one and updates self.gui_current_page.
     def last_page(self, dummy):  # Shift veiw range down one page
         global veiw_page_root
-
         if veiw_page_root - max_lines > -1:
             veiw_page_root = veiw_page_root - max_lines
             self.update_log_output(display_range=True, bottom=veiw_page_root, top=veiw_page_root + max_lines)
             self.page_adjust("prev")
 
 
+# about software screen main class TODO: fix window not "sticking" to center of main window
 class About:
     def __init__(self):
         self.builder = gtk.Builder()
@@ -230,7 +248,8 @@ class About:
         self.loggix_about_main.get_toplevel().destroy()
 
 
-class settings_menu:
+# settings menu main class (Unfinished LOW priority).
+class SettingsMenu:
     def __init__(self):
         self.builder = gtk.Builder()
         self.builder.add_from_file(gui_files)  # start the GTK Bulider and load the gui file
@@ -242,7 +261,8 @@ class settings_menu:
         self.loggix_about_main.get_toplevel().destroy()
 
 
-class new_log_window:
+# new file dialogue for opening/starting logs main class (Unfinished LOW priority).
+class NewLogWindow:
     def __init__(self):
         self.builder = gtk.Builder()
         self.builder.add_from_file(gui_files)  # start the GTK Bulider and load the gui file
@@ -253,6 +273,7 @@ class new_log_window:
     def kill(self, dummy1, dummy2):
         self.loggix_about_main.get_toplevel().destroy()
 
+
 if __name__ == '__main__':
-    main = loggix_main()
+    main = LoggixMain()
     gtk.main()
