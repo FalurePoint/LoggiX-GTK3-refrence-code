@@ -8,7 +8,7 @@
 
 
  Current release versions:
-   GUI: 2.2 Beta (1.x was discontinued before release, lots of bugs)
+   GUI: 2.3 Beta (1.x was discontinued before release, lots of bugs)
    Software: 1.0 Beta
    QRZ integration files: N/A
    LoTw integration files: N/A

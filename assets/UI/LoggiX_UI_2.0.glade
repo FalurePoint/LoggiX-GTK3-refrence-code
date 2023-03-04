@@ -11,6 +11,7 @@
     <property name="can_focus">False</property>
     <property name="default_width">440</property>
     <property name="default_height">459</property>
+    <property name="icon_name">applications-science</property>
     <child type="titlebar">
       <object class="GtkHeaderBar" id="title_bar">
         <property name="visible">True</property>
@@ -572,7 +573,7 @@
           <object class="GtkLabel" id="options_gui_version_lable">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">GUI version 2.2</property>
+            <property name="label" translatable="yes">GUI version 2.3</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -690,7 +691,9 @@ Debug profiling window?</property>
     <property name="comments" translatable="yes">Free radio logging software for the Gnome desktop!</property>
     <property name="website">Qsl.net/kl5is/loggixbeta</property>
     <property name="website_label" translatable="yes">Webpage (on my site)</property>
-    <property name="authors">Asa Lorentzen</property>
+    <property name="authors">Asa Lorentzen
+Daniel Weinhold</property>
+    <property name="artists">Carlos Marrero</property>
     <property name="logo_icon_name">network-receive</property>
     <property name="license_type">gpl-3-0</property>
     <child type="titlebar">

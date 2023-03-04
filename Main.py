@@ -13,8 +13,13 @@ from gi.repository import Gtk as gtk
 # Global variables
 current_path = os.path.abspath(__file__)
 parent_path = os.path.dirname(os.path.dirname(current_path))
-gui_files = parent_path + "/LoggiX/assets/UI/LoggiX_UI_2.0.glade"
-log_path = parent_path + "/LoggiX/assets/contacts.hlf"
+gui_files = parent_path + "/LoggiX-Logging-software/assets/UI/LoggiX_UI_2.0.glade"
+log_path = parent_path + "/LoggiX-Logging-software/assets/contacts.hlf"
+
+# software version globals
+application_version = "1.0 Beta"
+LoTw_connect_version = "N/A"
+QRZ_connect_version = "N/A"
 
 # predefine globals
 veiw_page_root = 1
@@ -48,6 +53,9 @@ class LoggixMain:
 
         # Get all the GUI objects
         self.get_objects_update()
+
+        # Set the main window title.
+        self.gui_title_banner.set_text(f"LoggiX {application_version} GitHub Nightly")
 
         # set initial page number for the gui, it's always one...
         self.gui_current_page.set_text(" 1 ")
