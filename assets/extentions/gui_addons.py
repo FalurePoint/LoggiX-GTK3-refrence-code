@@ -1,3 +1,4 @@
+# TODO get rid of this script entirely! it is just hang over from the old GUI system but is still active in Main.py.
 import gi
 import os
 current_path = os.path.abspath(__file__)
