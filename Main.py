@@ -13,8 +13,8 @@ from gi.repository import Gtk as gtk
 # Global variables
 current_path = os.path.abspath(__file__)
 parent_path = os.path.dirname(os.path.dirname(current_path))
-gui_files = parent_path + "/LoggiX/assets/UI/LoggiX_UI_2.0.XML"
-log_path = parent_path + "/LoggiX/assets/contacts.hlf"
+gui_files = parent_path + "/LoggiX-Logging-software/assets/UI/LoggiX_UI_2.0.XML"
+log_path = parent_path + "/LoggiX-Logging-software/assets/contacts.hlf"
 
 # software version globals
 application_version = "1.0 Beta"
@@ -166,7 +166,7 @@ class LoggixMain:
         print("Update to builder input objects finished")
         return time, date, freq, call, power, mode, report, comment, search_querry
 
-    # Adds an entry to the log file, currently lacking. Todo: prepend to log,  finish incomplete entry detect, watts slot autofill improvement.
+    # Adds an entry to the log file, currently lacking. Todo: finish incomplete entry detect.
     def add_to_log(self, dummy):
         values = self.update_inputs()  # stores the data from get_inputs() in value for unpacking in line 177
         if values:
@@ -182,13 +182,20 @@ class LoggixMain:
                     gui_addons.Warning()
                     print("well i tried...")
             if incomplete_detect is False:
-                log_entry = f"\n{values[0]} | {values[1]} | {values[2]} | {values[3]} | {values[4].replace('w', '').replace('W', '')}w | {values[5]} | {values[6]} | {values[7]}\n"  # unpackes then compiles to a log entry line
-                log_file = open(log_path, 'a')  # opens the log and writes the data to the log file
-                log_file.write(str(log_entry))
-                log_file.close()
-                self.page_adjust("reset")
-                self.global_display_is(read_logs()[0])
-                self.update_log_output(display_range=True, top=max_lines)  # update gui
+                values = log_inputs.analyze(values)
+                if values != "!TIME_ERROR!" and values != "!DATE_ERROR!":
+                    log_entry = f"\n{values[0]} | {values[1]} | {values[2]} | {values[3]} | {''.join(char for char in values[4] if not char.isalpha())}w | {values[5]} | {values[6]} | {values[7]}\n"  # unpackes then compiles to a log entry line
+                    log_file = open(log_path, 'r')
+                    content = log_file.read()
+                    log_file.close()
+                    log_file = open(log_path, 'w')# opens the log and writes the data to the log file
+                    log_file.write(str(log_entry) + content)
+                    log_file.close()
+                    self.page_adjust("reset")
+                    self.global_display_is(read_logs()[0])
+                    self.update_log_output(display_range=True, top=max_lines)  # update gui
+                else:
+                    gui_addons.Warning()
 
     # parse the log file for lines containing the search term and update the data passed to self.main_display
     def search_logs(self, dummy):
