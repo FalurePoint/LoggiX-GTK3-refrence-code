@@ -2,7 +2,7 @@ import inspect
 import os
 import datetime
 
-def error(content):
+def report(content):
     local = os.path.abspath(__file__)
     resources_dir = os.path.dirname(local)
     resources_dir = os.path.join(*resources_dir.split(os.sep)[:-2])
