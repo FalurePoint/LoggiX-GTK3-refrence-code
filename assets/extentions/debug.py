@@ -2,7 +2,7 @@ import inspect
 import os
 import datetime
 
-def report(content):
+def report(content, display_location=True):
     local = os.path.abspath(__file__)
     resources_dir = os.path.dirname(local)
     resources_dir = os.path.join(*resources_dir.split(os.sep)[:-2])
@@ -18,8 +18,9 @@ def report(content):
     x.write(str(timestamp))
     x.write(" from ")
     x.write(calling_script)
-    x.write(" around line ")
-    x.write(str(line_number))
+    if display_location is True:
+        x.write(" around line ")
+        x.write(str(line_number))
     x.write(": ")
     x.write(str(content))
     x.write("\n")
