@@ -1,20 +1,37 @@
 # Import extra scripts from extention folder
 from assets.extentions import *
+debug.report("Loading new instance...", display_location=False)
+# import modules
+try:
+    import gi
+    import webbrowser
+    import os
+    from datetime import datetime
+    import threading
+    import time
+except Exception as error:
+    debug.report(f"Failed to import required modules exiting with: {error}", display_location=False)
+    exit(1)
 
-# import Gtk
-import gi
-import webbrowser
-import os
 
 # Require Gtk3+ and import it as "gtk"
-gi.require_version('Gtk', "3.0")
-from gi.repository import Gtk as gtk
+debug.report("setting GTK requirements...", display_location=False)
+try:
+    gi.require_version('Gtk', "3.0")
+    from gi.repository import Gtk as gtk
+except Exception as error:
+    debug.report(f"Failed to set GTK requrements exiting with error: {error}", display_location=False)
+    exit(1)
 
-# Global variables
+
+# TODO-------------------Global path locations------------------TODO
+# Global file paths
 current_path = os.path.abspath(__file__)
 parent_path = os.path.dirname(os.path.dirname(current_path))
-gui_files = parent_path + "/LoggiX/assets/UI/LoggiX_UI_2.0.XML"
-log_path = parent_path + "/LoggiX/assets/contacts.hlf"
+gui_files = parent_path + "/LoggiX-Logging-software/assets/UI/LoggiX_UI_2.0.XML"
+log_path = parent_path + "/LoggiX-Logging-software/assets/contacts.hlf"
+threader_metadata_file = parent_path + "/LoggiX-Logging-software/assets/active_threads.threadingmeta"
+
 
 # software version globals
 application_version = "1.0 Beta"
@@ -28,82 +45,110 @@ max_lines = 65
 global_display_string = ""
 
 
+
 # Opens the log file and returns the content and line totals in [0] and [1] respectively
-def read_logs():
-    log_file = open(log_path, "r")  # get the content
-    log_data = log_file.read()
-    log_file.close()
-    with open(log_path, 'r') as f:  # get the line totals
-        line_count = 0
-        for line in f:
-            line_count += 1
-    return log_data, line_count
+def read_logs(location=log_path):
+    try:
+        log_file = open(location, "r")  # get the content
+        log_data = log_file.read()
+        log_file.close()
+        with open(location, 'r') as f:  # get the line totals
+            line_count = 0
+            for line in f:
+                line_count += 1
+        return log_data, line_count
+    except Exception as error:
+        debug.report(f"Failed to open Log file! error: {error}")
+
+
+
 
 
 # Main class contains most of the code for the application
 class LoggixMain:
     # Init or initialize is exactly what it sounds like, it initializes the gui and other major features
     def __init__(self):
-        global gui_files
+        debug.report("Starting Class LoggixMain()...",display_location=False)
+        try:
+            global gui_files
 
-        # Begin GTK
-        self.builder = gtk.Builder()
-        self.builder.add_from_file(gui_files)
-        self.builder.connect_signals(self)
+            # Begin GTK
+            self.builder = gtk.Builder()
+            self.builder.add_from_file(gui_files)
+            self.builder.connect_signals(self)
 
-        # Get all the GUI objects
-        self.get_objects_update()
+            # Get all the GUI objects
+            self.get_objects_update()
 
-        # Set the main window title.
-        self.gui_title_banner.set_text(f"LoggiX {application_version} GitHub Nightly")
+            # Set the main window title.
+            self.gui_title_banner.set_text(f"LoggiX {application_version} Dynamic Beta")
 
-        # set initial page number for the gui, it's always one...
-        self.gui_current_page.set_text(" 1 ")
-        self.gui_total_pages.set_text(str(self.calculate_pages(read_logs()[0])))
+            # set initial page number for the gui, it's always one...
+            self.gui_current_page.set_text(" 1 ")
+            self.gui_total_pages.set_text(str(self.calculate_pages(read_logs()[0])))
 
-        # Write the log file to the global variable that the GUI text output for the log reads from and update.
-        self.global_display_is(read_logs()[0])
-        self.update_log_output(display_range=True, top=max_lines)
+            # Write the log file to the global variable that the GUI text output for the log reads from and update.
+            self.global_display_is(read_logs()[0])
+            self.update_log_output(display_range=True, top=max_lines)
 
-        # Begin main window and connect close signal from GUI.
-        window = self.gui_main_window
-        window.connect("delete-event", gtk.main_quit)
-        window.show()
+
+            # Begin main window and connect close signal from GUI.
+            window = self.gui_main_window
+            window.connect("delete-event", gtk.main_quit)
+            window.show()
+
+            # Report to log that we made it through Initialization without error.
+            debug.report(f"Software started. Running from: {parent_path}/LoggiX", display_location=False)
+            debug.newline()
+
+        except Exception as error:
+            debug.report(f"Initialization error: {error} \n A controlled shutdown was preformed...")
+            print("Failed to initialize software... Exit code: 1")
+            exit(1)
+
+
+    def update_time(self):
+            current_utc = str(datetime.utcnow())
+            self.gui_input_time.set_text(current_utc)
 
     #  refresh data avalible from the gui (will not update gui output widgets)
     def get_objects_update(self):
-        # Title
-        self.gui_title_banner = self.builder.get_object("title_banner")
-        self.gui_title_options_button = self.builder.get_object("title_bar_options_button")
+        try:
+            # Title
+            self.gui_title_banner = self.builder.get_object("title_banner")
+            self.gui_title_options_button = self.builder.get_object("title_bar_options_button")
 
-        # Main GUI
-        self.gui_main_window = self.builder.get_object("loggix_gui_main")
-        self.gui_input_time = self.builder.get_object("input_time")
-        self.gui_input_date = self.builder.get_object("input_date")
-        self.gui_input_freq = self.builder.get_object("input_freq")
-        self.gui_input_callsign = self.builder.get_object("input_callsign")
-        self.gui_input_power = self.builder.get_object("input_power")
-        self.gui_input_mode = self.builder.get_object("input_mode")
-        self.gui_input_report = self.builder.get_object("input_report")
-        self.gui_input_comment = self.builder.get_object("input_comment")
-        self.gui_main_display = self.builder.get_object("gui_main_display")
-        self.gui_search_input = self.builder.get_object("nav_search_entry")
-        self.gui_search_button = self.builder.get_object("nav_search_button")
-        self.gui_next_page = self.builder.get_object("nav_next_button")
-        self.gui_last_page = self.builder.get_object("nav_last_button")
-        self.gui_current_page = self.builder.get_object("nav_page_display_one")
-        self.gui_total_pages = self.builder.get_object("nav_page_display_two")
+            # Main GUI
+            self.gui_main_window = self.builder.get_object("loggix_gui_main")
+            self.gui_input_time = self.builder.get_object("input_time")
+            self.gui_input_date = self.builder.get_object("input_date")
+            self.gui_input_freq = self.builder.get_object("input_freq")
+            self.gui_input_callsign = self.builder.get_object("input_callsign")
+            self.gui_input_power = self.builder.get_object("input_power")
+            self.gui_input_mode = self.builder.get_object("input_mode")
+            self.gui_input_report = self.builder.get_object("input_report")
+            self.gui_input_comment = self.builder.get_object("input_comment")
+            self.gui_main_display = self.builder.get_object("gui_main_display")
+            self.gui_next_page = self.builder.get_object("nav_next_button")
+            self.gui_last_page = self.builder.get_object("nav_last_button")
+            self.gui_current_page = self.builder.get_object("nav_page_display_one")
+            self.gui_total_pages = self.builder.get_object("nav_page_display_two")
 
-        # options dropdown
-        self.gui_options_dropdown = self.builder.get_object("options_dropdown")
-        self.gui_debug_mode = self.builder.get_object("debug_mode_toggle")
-        self.gui_setting_button = self.builder.get_object("options_settings_button")
-        self.gui_contribue_button = self.builder.get_object("options_contribute_button")
-        self.gui_website_button = self.builder.get_object("options_website_button")
-        self.gui_about_button = self.builder.get_object("options_about_button")
-        self.gui_version_notice = self.builder.get_object("options_gui_version_lable")
+            # options dropdown
+            self.gui_options_dropdown = self.builder.get_object("options_dropdown")
+            self.gui_debug_mode = self.builder.get_object("debug_mode_toggle")
+            self.gui_setting_button = self.builder.get_object("options_settings_button")
+            self.gui_contribue_button = self.builder.get_object("options_contribute_button")
+            self.gui_website_button = self.builder.get_object("options_website_button")
+            self.gui_about_button = self.builder.get_object("options_about_button")
+            self.gui_search_input = self.builder.get_object("options_log_search_entry")
+            self.gui_search_button = self.builder.get_object("options_log_search_button")
+            self.gui_version_notice = self.builder.get_object("options_gui_version_lable")
+        except Exception as error:
+            debug.report(f"An exception was caught and ignored while connecting to GUI but is being logged just in case: {error}")
+            print("WARNING: reported unhandeled error while connecting to GUI to debug log, you might want to look in to this...")
 
-    # lots of little empty calls at the moment, GUI elements are connected though
+    # lots of little empty calls at the moment, GUI elements are connected though TODO: finish making, add debuging.
     def show_options(self, dummy):
         self.gui_options_dropdown.show_all()
 
@@ -121,14 +166,17 @@ class LoggixMain:
 
     # devides the total lines buy the amount of lines allow per page defined by the global "max_lines"
     def calculate_pages(self, input_data, dummy=None):
-        string_lines = len(input_data.split('\n'))  # find total lines in string by breaking at \n
-        if string_lines < max_lines:  # less then one is over-ridden and 1 is used instead because you can't have data AND 0 pages... :P
-            return " 1 "
-        else:
-            pages = int(string_lines) // max_lines
-            pages = pages + 1
-            pages = " " + str(pages) + " "
-            return pages
+        try:
+            string_lines = len(input_data.split('\n'))  # find total lines in string by breaking at \n
+            if string_lines < max_lines:  # less then one is over-ridden and 1 is used instead because you can't have data AND 0 pages... :P
+                return " 1 "
+            else:
+                pages = int(string_lines) // max_lines
+                pages = pages + 1
+                pages = " " + str(pages) + " "
+                return pages
+        except Exception as error:
+            debug.report(f"Non-fatal error while trying to calculate total pages for GUI do display: {error}")
 
     # pushes new data to self.gui_main_display from a supplyed string or directly from the current .hlf file being used
     def update_log_output(self, content=None, display_range=False, bottom=1, top=max_lines):  # used to write data to the log textveiw in gui, capable of writing a string or pulling from log file.
@@ -182,8 +230,8 @@ class LoggixMain:
                     gui_addons.Warning()
                     print("well i tried...")
             if incomplete_detect is False:
-                values = log_inputs.analyze(values)
-                if values != "!TIME_ERROR!" and values != "!DATE_ERROR!":
+                #values = log_inputs.analyze(values)
+                if values != "!TIME_ERROR!Remove_this" and values != "!DATE_ERROR!Remove_This":
                     log_entry = f"\n{values[0]} | {values[1]} | {values[2]} | {values[3]} | {''.join(char for char in values[4] if not char.isalpha())}w | {values[5]} | {values[6]} | {values[7]}\n"  # unpackes then compiles to a log entry line
                     log_file = open(log_path, 'r')
                     content = log_file.read()

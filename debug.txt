@@ -1,2 +1,0 @@
-### This is the program debug file for the LoggiX radio logging software ###
-

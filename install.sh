@@ -19,7 +19,7 @@ echo  Type=Application >> LoggiX-Development.desktop
 echo  Terminal=false >> LoggiX-Development.desktop
 echo  Exec=python3 ~/.local/share/applications/LoggiX/Main.py >> LoggiX-Development.desktop
 echo  Name=LoggiX Development Beta >> LoggiX-Development.desktop
-echo  Icon=applications-science >> LoggiX-Development.desktop
+echo  Icon=~/.local/share/applications/LoggiX/assets/logo/loggix_icon.png >> LoggiX-Development.desktop
 gio set ~/.local/share/applications/LoggiX-Development.desktop metadata::trusted true
 chmod a+x ~/.local/share/applications/LoggiX-Development.desktop
 chmod a+x ~/.local/share/applications/LoggiX/Main.py
@@ -34,7 +34,7 @@ echo  Type=Application >> ~/Desktop/LoggiX-Development.desktop
 echo  Terminal=false >> ~/Desktop/LoggiX-Development.desktop
 echo  Exec=python3 ~/.local/share/applications/LoggiX/Main.py >> ~/Desktop/LoggiX-Development.desktop
 echo  Name=LoggiX Development Beta >> ~/Desktop/LoggiX-Development.desktop
-echo  Icon=applications-science >> ~/Desktop/LoggiX-Development.desktop
+echo  Icon=~/.local/share/applications/LoggiX/assets/logol/loggix_icon.png >> ~/Desktop/LoggiX-Development.desktop
 gio set ~/Desktop/LoggiX-Development.desktop metadata::trusted true
 chmod a+x ~/Desktop/LoggiX-Development.desktop
 }
