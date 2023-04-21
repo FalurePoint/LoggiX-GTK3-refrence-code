@@ -456,11 +456,12 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkButton" id="band_6m1">
+              <object class="GtkButton" id="band_20">
                 <property name="label" translatable="yes">20m</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="band_select_20" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -480,11 +481,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="band_10m1">
+              <object class="GtkButton" id="band_40">
                 <property name="label" translatable="yes">40m</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="band_select_40" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -504,11 +506,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="band_20m1">
+              <object class="GtkButton" id="band_80">
                 <property name="label" translatable="yes">80m</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="band_select_80" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -528,11 +531,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="band_40m1">
+              <object class="GtkButton" id="band_160">
                 <property name="label" translatable="yes">160m</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="band_select_160" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -553,12 +557,12 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkButton" id="band_6m">
+              <object class="GtkButton" id="band_70">
                 <property name="label" translatable="yes">70cm</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="band_select_6" swapped="no"/>
+                <signal name="clicked" handler="band_select_70" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -578,12 +582,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="band_10m">
+              <object class="GtkButton" id="band_2">
                 <property name="label" translatable="yes">2m</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="band_select_10" swapped="no"/>
+                <signal name="clicked" handler="band_select_2" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -603,12 +607,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="band_20m">
+              <object class="GtkButton" id="band_6">
                 <property name="label" translatable="yes">6m</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="band_select_20" swapped="no"/>
+                <signal name="clicked" handler="band_select_6" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -628,12 +632,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="band_40m">
+              <object class="GtkButton" id="band_10">
                 <property name="label" translatable="yes">10m</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="band_select_40" swapped="no"/>
+                <signal name="clicked" handler="band_select_10" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

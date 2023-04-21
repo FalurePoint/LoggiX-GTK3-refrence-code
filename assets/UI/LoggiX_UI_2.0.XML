@@ -898,7 +898,7 @@ Daniel Weinhold</property>
           <object class="GtkLabel" id="options_gui_version_lable">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">GUI version 3.0</property>
+            <property name="label" translatable="yes">GUI version 3.2</property>
           </object>
           <packing>
             <property name="expand">False</property>
