@@ -1,3 +1,4 @@
+#!/bin/bash
 # LoggiX install shell script
 
 echo Welcome to the LoggiX command line installer for LoggiX version 1.0 Beta!
@@ -5,38 +6,40 @@ echo Welcome to the LoggiX command line installer for LoggiX version 1.0 Beta!
 
 # function to install LoggiX
 function install {
+	pip3 install webbrowser
+	pip3 install datetime
+	pip3 install time
+	echo "Installing LoggiX..."
+	mkdir ~/.local/share/applications/LoggiX
+	cp main.py ~/.local/share/applications/LoggiX
+	cp -r assets ~/.local/share/applications/LoggiX
 
-echo "Installing LoggiX..."
-mkdir ~/.local/share/applications/LoggiX
-cp Main.py ~/.local/share/applications/LoggiX
-cp -r assets ~/.local/share/applications/LoggiX
-
-cd ~/.local/share/applications
-touch LoggiX-Development.desktop
-echo  [Desktop Entry] >> LoggiX-Development.desktop
-echo  Version=1.0 >> LoggiX-Development.desktop
-echo  Type=Application >> LoggiX-Development.desktop
-echo  Terminal=false >> LoggiX-Development.desktop
-echo  Exec=python3 ~/.local/share/applications/LoggiX/Main.py >> LoggiX-Development.desktop
-echo  Name=LoggiX Development Beta >> LoggiX-Development.desktop
-echo  Icon=~/.local/share/applications/LoggiX/assets/logo/loggix_icon.png >> LoggiX-Development.desktop
-gio set ~/.local/share/applications/LoggiX-Development.desktop metadata::trusted true
-chmod a+x ~/.local/share/applications/LoggiX-Development.desktop
-chmod a+x ~/.local/share/applications/LoggiX/Main.py
-#clear
+	cd ~/.local/share/applications
+	touch LoggiX-Development.desktop
+	echo  [Desktop Entry] >> LoggiX-Development.desktop
+	echo  Version=1.0 >> LoggiX-Development.desktop
+	echo  Type=Application >> LoggiX-Development.desktop
+	echo  Terminal=false >> LoggiX-Development.desktop
+	echo  Exec=python3 ~/.local/share/applications/LoggiX/main.py >> LoggiX-Development.desktop
+	echo  Name=LoggiX Development Beta >> LoggiX-Development.desktop
+	echo  Icon=~/.local/share/applications/LoggiX/assets/logo/loggix_icon.png >> LoggiX-Development.desktop
+	gio set ~/.local/share/applications/LoggiX-Development.desktop metadata::trusted true
+	chmod a+x ~/.local/share/applications/LoggiX-Development.desktop
+	chmod a+x ~/.local/share/applications/LoggiX/main.py
 }
 
+
 function add_to_desktop {
-touch ~/Desktop/LoggiX-Development.desktop
-echo  [Desktop Entry] >> ~/Desktop/LoggiX-Development.desktop
-echo  Version=1.0 >> ~/Desktop/LoggiX-Development.desktop
-echo  Type=Application >> ~/Desktop/LoggiX-Development.desktop
-echo  Terminal=false >> ~/Desktop/LoggiX-Development.desktop
-echo  Exec=python3 ~/.local/share/applications/LoggiX/Main.py >> ~/Desktop/LoggiX-Development.desktop
-echo  Name=LoggiX Development Beta >> ~/Desktop/LoggiX-Development.desktop
-echo  Icon=~/.local/share/applications/LoggiX/assets/logol/loggix_icon.png >> ~/Desktop/LoggiX-Development.desktop
-gio set ~/Desktop/LoggiX-Development.desktop metadata::trusted true
-chmod a+x ~/Desktop/LoggiX-Development.desktop
+	touch ~/Desktop/LoggiX-Development.desktop
+	echo  [Desktop Entry] >> ~/Desktop/LoggiX-Development.desktop
+	echo  Version=1.0 >> ~/Desktop/LoggiX-Development.desktop
+	echo  Type=Application >> ~/Desktop/LoggiX-Development.desktop
+	echo  Terminal=false >> ~/Desktop/LoggiX-Development.desktop
+	echo  Exec=python3 ~/.local/share/applications/LoggiX/main.py >> ~/Desktop/LoggiX-Development.desktop
+	echo  Name=LoggiX Development Beta >> ~/Desktop/LoggiX-Development.desktop
+	echo  Icon=~/.local/share/applications/LoggiX/assets/logo/loggix_icon.png >> ~/Desktop/LoggiX-Development.desktop
+	gio set ~/Desktop/LoggiX-Development.desktop metadata::trusted true
+	chmod a+x ~/Desktop/LoggiX-Development.desktop
 }
 
 

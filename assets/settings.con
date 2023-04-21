@@ -1,0 +1,4 @@
+current_log = assets/contacts.hlf
+debug = true
+ysu_bridge = false
+autofill = false
