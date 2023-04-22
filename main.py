@@ -18,6 +18,7 @@ debug.report("setting GTK requirements...", display_location=False)
 try:
     gi.require_version('Gtk', "3.0")
     from gi.repository import Gtk as gtk
+    from gi.repository import Gdk as gdk
     debug.report("GTK ready...", display_location=False)
 except Exception as error:
     debug.report(f"Failed to set GTK requrements exiting with error: {error}", display_location=False)
@@ -36,7 +37,7 @@ log_path = parent_path + "/LoggiX-Logging-software/" + read_con.get("current_log
 
 
 # software version globals
-application_version = "1.0 Beta"
+application_version = "1.4.2"
 LoTw_connect_version = "N/A"
 QRZ_connect_version = "N/A"
 
@@ -46,6 +47,10 @@ veiw_page_root = 1
 starting_page_number = 1
 max_lines = 65
 global_display_string = ""
+
+# settings globals
+dupe_checking = read_con.get("dupe_checking")
+qs_dropdowns = read_con.get("contest_qsd")
 
 
 # Opens the log file and returns the content and line totals in [0] and [1] respectively
@@ -82,11 +87,11 @@ class LoggixMain:
             self.get_objects_update()
 
             # Set the main window title.
-            self.gui_title_banner.set_text(f"LoggiX {application_version} Dynamic Beta")
+            self.gui_title_banner.set_text(f"LoggiX {application_version}")
 
             # set initial page number for the gui, it's always one...
-            self.gui_current_page.set_text(" 1 ")
-            self.gui_total_pages.set_text(str(self.calculate_pages(read_logs()[0])))
+            self.gui_loggix_current_page.set_text(" 1 ")
+            self.gui_loggix_total_pages.set_text(str(self.calculate_pages(read_logs()[0])))
 
             # Write the log file to the global variable that the GUI text output for the log reads from and update.
             self.global_display_is(read_logs()[0])
@@ -94,9 +99,12 @@ class LoggixMain:
 
 
             # Begin main window and connect close signal from GUI.
-            window = self.gui_main_window
+            window = self.gui_loggix_main_window
             window.connect("delete-event", gtk.main_quit)
+            window.connect("key_press_event", self.shortcut_detect)
             window.show()
+
+
 
 
             # Report to log that we made it through Initialization without error.
@@ -110,8 +118,23 @@ class LoggixMain:
 
 
     def update_time(self):
-            current_utc = str(datetime.utcnow())
-            self.gui_input_time.set_text(current_utc)
+        current_utc = str(datetime.utcnow())
+        self.gui_loggix_input_time.set_text(current_utc)
+
+
+    def shortcut_detect(self, widget, event):
+        if event.keyval == gdk.KEY_Control_R:
+            self.global_display_is(read_logs()[0])
+            self.update_log_output(display_range=True, top=max_lines)
+            self.gui_loggix_input_callsign.grab_focus()
+            return True
+        if event.keyval == gdk.KEY_Escape:
+            self.gui_loggix_input_callsign.grab_focus()
+            self.gui_loggix_input_callsign.set_text("")
+            self.global_display_is(read_logs()[0])
+            self.update_log_output(display_range=True, top=max_lines)
+            return True
+
 
     #  refresh data avalible from the gui (will not update gui output widgets)
     def get_objects_update(self):
@@ -121,46 +144,44 @@ class LoggixMain:
             self.gui_title_options_button = self.builder.get_object("title_bar_options_button")
 
             # Main GUI
-            self.gui_main_window = self.builder.get_object("loggix_gui_main")
-            self.gui_input_time = self.builder.get_object("input_time")
-            self.gui_input_date = self.builder.get_object("input_date")
-            self.gui_input_freq = self.builder.get_object("input_freq")
-            self.gui_input_callsign = self.builder.get_object("input_callsign")
-            self.gui_input_power = self.builder.get_object("input_power")
-            self.gui_input_mode = self.builder.get_object("input_mode")
-            self.gui_input_report = self.builder.get_object("input_report")
-            self.gui_input_comment = self.builder.get_object("input_comment")
-            self.gui_main_display = self.builder.get_object("gui_main_display")
-            self.gui_next_page = self.builder.get_object("nav_next_button")
-            self.gui_last_page = self.builder.get_object("nav_last_button")
-            self.gui_current_page = self.builder.get_object("nav_page_display_one")
-            self.gui_total_pages = self.builder.get_object("nav_page_display_two")
-            self.gui_serial_input = self.builder.get_object("nav_serial_entry")
-            self.gui_local_serial = self.builder.get_object("nav_serial_number_display")
+            self.gui_loggix_main_window = self.builder.get_object("loggix_gui_main")
+            self.gui_loggix_input_time = self.builder.get_object("input_time")
+            self.gui_loggix_input_date = self.builder.get_object("input_date")
+            self.gui_loggix_input_freq = self.builder.get_object("input_freq")
+            self.gui_loggix_input_callsign = self.builder.get_object("input_callsign")
+            self.gui_loggix_input_power = self.builder.get_object("input_power")
+            self.gui_loggix_input_mode = self.builder.get_object("input_mode")
+            self.gui_loggix_input_report = self.builder.get_object("input_report")
+            self.gui_loggix_input_comment = self.builder.get_object("input_comment")
+            self.gui_loggix_main_display = self.builder.get_object("gui_main_display")
+            self.gui_loggix_next_page = self.builder.get_object("nav_next_button")
+            self.gui_loggix_last_page = self.builder.get_object("nav_last_button")
+            self.gui_loggix_current_page = self.builder.get_object("nav_page_display_one")
+            self.gui_loggix_total_pages = self.builder.get_object("nav_page_display_two")
+            self.gui_loggix_serial_input = self.builder.get_object("nav_serial_entry")
+            self.gui_loggix_local_serial = self.builder.get_object("nav_serial_number_display")
 
             # options dropdown
-            self.gui_options_dropdown = self.builder.get_object("options_dropdown")
-            self.gui_band_dropdown = self.builder.get_object("band_dropdown")
-            self.gui_debug_mode = self.builder.get_object("debug_mode_toggle")
-            self.gui_setting_button = self.builder.get_object("options_settings_button")
-            self.gui_contribue_button = self.builder.get_object("options_contribute_button")
-            self.gui_website_button = self.builder.get_object("options_website_button")
-            self.gui_about_button = self.builder.get_object("options_about_button")
-            self.gui_search_input = self.builder.get_object("options_log_search_entry")
-            self.gui_search_button = self.builder.get_object("options_log_search_button")
-            self.gui_version_notice = self.builder.get_object("options_gui_version_lable")
+            self.gui_options_dropdown_main = self.builder.get_object("options_dropdown")
+            self.gui_options_power_dropdown = self.builder.get_object("power_dropdown")
+            self.gui_options_mode_dropdown = self.builder.get_object("mode_dropdown")
+            self.gui_options_band_dropdown = self.builder.get_object("band_dropdown")
+            self.gui_options_debug_mode = self.builder.get_object("debug_mode_toggle")
+            self.gui_options_setting_button = self.builder.get_object("options_settings_button")
+            self.gui_options_contribue_button = self.builder.get_object("options_contribute_button")
+            self.gui_options_website_button = self.builder.get_object("options_website_button")
+            self.gui_options_about_button = self.builder.get_object("options_about_button")
+            self.gui_options_search_input = self.builder.get_object("options_log_search_entry")
+            self.gui_options_search_button = self.builder.get_object("options_log_search_button")
+            self.gui_options_version_notice = self.builder.get_object("options_gui_version_lable")
+
+            # settings window
+            self.gui_settings_open_debug_button = self.builder.get_object("settings_header_debug_button")
         except Exception as error:
             debug.report(f"An exception was caught and ignored while connecting to GUI but is being logged just in case: {error}")
             print("WARNING: reported unhandeled error while connecting to GUI to debug log, you might want to look in to this...")
 
     # lots of little empty calls at the moment, GUI elements are connected though TODO: finish making, add debuging.
-    def show_options(self, dummy):
-        self.gui_options_dropdown.show_all()
-
-    def band_dropdown(self, dummy, dummy2):
-        self.gui_band_dropdown.show_all()
-
-
     def open_log_file(self):
         dialog = gtk.FileChooserDialog(title="Please choose a file", parent=None, action=gtk.FileChooserAction.OPEN)
         dialog.add_buttons(gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL, "Open", gtk.ResponseType.OK)
@@ -212,15 +233,15 @@ class LoggixMain:
     # pushes new data to self.gui_main_display from a supplyed string or directly from the current .hlf file being used
     def update_log_output(self, content=None, display_range=False, bottom=1, top=max_lines):  # used to write data to the log textveiw in gui, capable of writing a string or pulling from log file.
         global global_display_string
-        log_buffer = self.gui_main_display.get_buffer()
+        log_buffer = self.gui_loggix_main_display.get_buffer()
         if content is None:  # no string was passed (strings have priority)
-            self.gui_total_pages.set_text(self.calculate_pages(str(global_display_string)))
+            self.gui_loggix_total_pages.set_text(self.calculate_pages(str(global_display_string)))
             if display_range is True:
                 log_buffer.set_text(get_range.get_from_string(global_display_string, bottom, top))
             else:
                 log_buffer.set_text(global_display_string)
         else:  # a string was passed
-            self.gui_total_pages.set_text(self.calculate_pages(str(content)))
+            self.gui_loggix_total_pages.set_text(self.calculate_pages(str(content)))
             if display_range is True:
                 log_buffer.set_text(get_range.get_from_string(content, bottom, top))  # write to log output with range
             else:
@@ -233,15 +254,15 @@ class LoggixMain:
 
     # gets any new information from text entrys.
     def update_inputs(self):
-        time = self.gui_input_time.get_text().strip()
-        date = self.gui_input_date.get_text().strip()
-        freq = self.gui_input_freq.get_text().strip()
-        call = self.gui_input_callsign.get_text().strip()
-        power = self.gui_input_power.get_text().strip()
-        mode = self.gui_input_mode.get_text().strip()
-        report = self.gui_input_report.get_text().strip()
-        comment = self.gui_input_comment.get_text().strip()
-        search_querry = self.gui_search_input.get_text().strip()
+        time = self.gui_loggix_input_time.get_text().strip()
+        date = self.gui_loggix_input_date.get_text().strip()
+        freq = self.gui_loggix_input_freq.get_text().strip()
+        call = self.gui_loggix_input_callsign.get_text().strip()
+        power = self.gui_loggix_input_power.get_text().strip()
+        mode = self.gui_loggix_input_mode.get_text().strip()
+        report = self.gui_loggix_input_report.get_text().strip()
+        comment = self.gui_loggix_input_comment.get_text().strip()
+        search_querry = self.gui_options_search_input.get_text().strip()
         print("Update to builder input objects finished")
         return time, date, freq, call, power, mode, report, comment, search_querry
 
@@ -250,7 +271,7 @@ class LoggixMain:
         if contest_mode_state:
             utc = datetime.utcnow().time()
             utc = utc.strftime('%H:%M')
-            self.gui_input_time.set_text(str(utc))
+            self.gui_loggix_input_time.set_text(str(utc))
         values = self.update_inputs()  # stores the data from get_inputs() in value for unpacking in line 177
         if values:
             value_id = 0
@@ -276,7 +297,7 @@ class LoggixMain:
                     input_data = log_file.read()
                     serial_base = int(len(input_data.split('\n')))
                     print(serial_base)
-                    self.gui_local_serial.set_text(str(int((serial_base - 1) / 2)))
+                    self.gui_loggix_local_serial.set_text(str(int((serial_base - 1) / 2)))
                 self.page_adjust("reset")
                 self.global_display_is(read_logs()[0])
                 self.update_log_output(display_range=True, top=max_lines)  # update gui
@@ -297,6 +318,7 @@ class LoggixMain:
                 if resaults is True:
                     search_output = search_output + str(search_function.get_line(log_path, working_line + 1))  # append new resaults from each positive line to the resault string
                 working_line = working_line + 1
+            print(search_output)
             self.global_display_is(search_output)
             self.update_log_output(display_range=True, top=max_lines)  # update the gui
 
@@ -307,14 +329,14 @@ class LoggixMain:
         current_page = self.builder.get_object("active_page")
         if move == "next":
             starting_page_number = starting_page_number + 1
-            self.gui_current_page.set_text(" " + str(starting_page_number) + " ")
+            self.gui_loggix_current_page.set_text(" " + str(starting_page_number) + " ")
         if move == "prev":
             starting_page_number = starting_page_number - 1
-            self.gui_current_page.set_text(" " + str(starting_page_number) + " ")
+            self.gui_loggix_current_page.set_text(" " + str(starting_page_number) + " ")
         if move == "reset":
             veiw_page_root = 1
             starting_page_number = 1
-            self.gui_current_page.set_text(" " + str(starting_page_number) + " ")
+            self.gui_loggix_current_page.set_text(" " + str(starting_page_number) + " ")
 
     # calls page_adjust corectly for forward one and updates self.gui_current_page.
     def next_page(self, dummy):  # Shift  veiw range up one page
@@ -341,49 +363,121 @@ class LoggixMain:
             log_file = open(log_path, 'r')
             input_data = log_file.read()
             serial_base = len(input_data.split('\n'))
-            self.gui_local_serial.set_text(str(int((serial_base - 1) / 2)))
-            self.gui_serial_input.set_placeholder_text("Serial No. here...")
-            self.gui_input_date.set_text(str(datetime.utcnow().date()))
+            self.gui_loggix_local_serial.set_text(str(int((serial_base - 1) / 2)))
+            self.gui_loggix_serial_input.set_placeholder_text("Serial No. here...")
+            self.gui_loggix_input_date.set_text(str(datetime.utcnow().date()))
             utc = datetime.utcnow().time()
             utc = utc.strftime('%H:%M')
-            self.gui_input_time.set_text(str(utc))
-            self.gui_input_report.set_text("59/59")
-            self.gui_input_freq.set_placeholder_text("double click for bands...")
-            self.gui_input_power.set_placeholder_text("Enter contest power...")
-            self.gui_input_mode.set_placeholder_text("Enter contest mode...")
+            self.gui_loggix_input_time.set_text(str(utc))
+            self.gui_loggix_input_report.set_text("59/59")
+            self.gui_loggix_input_freq.set_placeholder_text("double click for bands...")
+            self.gui_loggix_input_power.set_placeholder_text("Enter contest power...")
+            self.gui_loggix_input_mode.set_placeholder_text("Enter contest mode...")
         else:
             debug.report("contest mode disabled by user", display_location=False)
-            self.gui_input_freq.set_placeholder_text("")
-            self.gui_input_power.set_placeholder_text("")
-            self.gui_input_mode.set_placeholder_text("")
-            self.gui_local_serial.set_text("")
-            self.gui_input_report.set_text("")
-            self.gui_input_date.set_text("")
-            self.gui_serial_input.set_placeholder_text("Contest mode is off...")
+            self.gui_loggix_input_freq.set_placeholder_text("")
+            self.gui_loggix_input_power.set_placeholder_text("")
+            self.gui_loggix_input_mode.set_placeholder_text("")
+            self.gui_loggix_local_serial.set_text("")
+            self.gui_loggix_input_report.set_text("")
+            self.gui_loggix_input_date.set_text("")
+            self.gui_loggix_serial_input.set_placeholder_text("Contest mode is off...")
+
+#TODO----------------Dropdowns----------------------TODO
+    def show_options(self, dummy):
+        self.gui_options_dropdown_main.show_all()
+    def band_dropdown(self, dummy, dummy2):
+        self.global_display_is(read_logs()[0])
+        self.update_log_output(display_range=True, top=max_lines)
+        if contest_mode_state:
+            if qs_dropdowns:
+                self.gui_options_band_dropdown.show_all()
+    def power_dropdown(self, dummy, dummy2):
+        self.global_display_is(read_logs()[0])
+        self.update_log_output(display_range=True, top=max_lines)
+        if contest_mode_state:
+            if qs_dropdowns:
+                self.gui_options_power_dropdown.show_all()
+    def mode_dropdown(self, dummy, dummy2):
+        self.global_display_is(read_logs()[0])
+        self.update_log_output(display_range=True, top=max_lines)
+        if contest_mode_state:
+            if qs_dropdowns:
+                self.gui_options_mode_dropdown.show_all()
 
 
-#TODO--------------------I made a nice little mess of the code here...------------------------TODO
+#TODO--------------------misc GUI actions connect------------------------TODO
     def shift_comment(self, dummy):
-        self.gui_input_comment.grab_focus()
+        if contest_mode_state:
+            if dupe_checking:
+                total_lines = read_logs()[1]  # get total lines
+                working_line = 0
+                search_output = ""  # clear the output for a fresh search
+                print(str(read_logs()[0]))
+                while working_line < total_lines:  # parse each line for search resualts
+                    resaults = search_function.line_has(log_path, working_line, self.gui_loggix_input_callsign.get_text())  # if this line has
+                    if resaults is True:
+                        search_output = search_output + str(search_function.get_line(log_path, working_line + 1))  # append new resaults from each positive line to the resault string
+                    working_line = working_line + 1
+                print("out:" + search_output)
+                if search_output != "":
+                    self.global_display_is(search_output + "\n" + "DUPLICATE WARNING!")
+                    self.update_log_output(display_range=True, top=max_lines)
+            self.gui_loggix_input_comment.grab_focus()
     def shift_serial(self, dummy):
-        self.gui_serial_input.grab_focus()
-    def band_select_70(self, band_option):
-        self.gui_input_freq.set_text("70cm")
-    def band_select_2(self, band_option):
-        self.gui_input_freq.set_text("2m")
-    def band_select_6(self, band_option):
-        self.gui_input_freq.set_text("6m")
-    def band_select_10(self, band_option):
-        self.gui_input_freq.set_text("10m")
-    def band_select_20(self, band_option):
-        self.gui_input_freq.set_text("20m")
-    def band_select_40(self, band_option):
-        self.gui_input_freq.set_text("40m")
-    def band_select_80(self, band_option):
-        self.gui_input_freq.set_text("80m")
-    def band_select_160(self, band_option):
-        self.gui_input_freq.set_text("160m")
+        if contest_mode_state:
+            self.gui_loggix_serial_input.grab_focus()
 
+    def band_select_70(self, band_option):
+        self.gui_loggix_input_freq.set_text("420.000")
+    def band_select_2(self, band_option):
+        self.gui_loggix_input_freq.set_text("144.000")
+    def band_select_6(self, band_option):
+        self.gui_loggix_input_freq.set_text("50.000")
+    def band_select_10(self, band_option):
+        self.gui_loggix_input_freq.set_text("28.000")
+    def band_select_20(self, band_option):
+        self.gui_loggix_input_freq.set_text("14.000")
+    def band_select_40(self, band_option):
+        self.gui_loggix_input_freq.set_text("7.000")
+    def band_select_80(self, band_option):
+        self.gui_loggix_input_freq.set_text("3.500")
+    def band_select_160(self, band_option):
+        self.gui_loggix_input_freq.set_text("1.800")
+
+    def power_select_5(self, band_option):
+        self.gui_loggix__input_power.set_text("5W")
+    def power_select_10(self, band_option):
+        self.gui_loggix_input_power.set_text("10W")
+    def power_select_50(self, band_option):
+        self.gui_loggix_input_power.set_text("50W")
+    def power_select_100(self, band_option):
+        self.gui_loggix_input_power.set_text("100W")
+    def power_select_200(self, band_option):
+        self.gui_loggix_input_power.set_text("200W")
+    def power_select_300(self, band_option):
+        self.gui_loggix_input_power.set_text("300W")
+    def power_select_500(self, band_option):
+        self.gui_loggix_input_power.set_text("500W")
+    def power_select_1500(self, band_option):
+        self.gui_loggix_input_power.set_text("1500W")
+
+    def mode_select_fm(self, band_option):
+        self.gui_loggix_input_mode.set_text("FM")
+    def mode_select_ssb(self, band_option):
+        self.gui_loggix_input_mode.set_text("SSB")
+    def mode_select_cw(self, band_option):
+        self.gui_loggix_input_mode.set_text("CW")
+    def mode_select_am(self, band_option):
+        self.gui_loggix_input_mode.set_text("AM")
+    def mode_select_ft8(self, band_option):
+        self.gui_loggix_input_mode.set_text("FT8")
+    def mode_select_rtty(self, band_option):
+        self.gui_loggix_input_mode.set_text("RTTY")
+    def mode_select_sstv(self, band_option):
+        self.gui_loggix_input_mode.set_text("SSTV")
+    def mode_select_data(self, band_option):
+        self.gui_loggix_input_mode.set_text("DATA")
 
 
 # about software screen main class TODO: fix window not "sticking" to center of main window

@@ -1,4 +1,9 @@
 current_log = assets/contacts.hlf
 debug = true
-ysu_bridge = false
-autofill = false
+contest_qsd = true
+dupe_checking = true
+
+settings prefixed with "#" are not functional yet.
+## ysu_bridge = false
+## autofill = false
+## contest_autofill = true
