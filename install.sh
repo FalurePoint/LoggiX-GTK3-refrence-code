@@ -6,10 +6,7 @@ echo Welcome to the LoggiX command line installer for LoggiX version 1.0 Beta!
 
 # function to install LoggiX
 function install {
-	pip3 install webbrowser
-	pip3 install datetime
-	pip3 install time
-	echo "Installing LoggiX..."
+	echo installing LoggiX...
 	mkdir ~/.local/share/applications/LoggiX
 	cp main.py ~/.local/share/applications/LoggiX
 	cp -r assets ~/.local/share/applications/LoggiX

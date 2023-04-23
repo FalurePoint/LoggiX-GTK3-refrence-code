@@ -283,6 +283,7 @@
                     <property name="primary_icon_tooltip_text" translatable="yes">can search power, callsign, mode, comment ect, press "find" to seach.</property>
                     <property name="placeholder_text" translatable="yes">Contest mode is off...</property>
                     <property name="input_purpose">number</property>
+                    <signal name="activate" handler="shift_press_log" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1091,11 +1092,12 @@
     <property name="program_name">LoggiX</property>
     <property name="version">1.0 Beta</property>
     <property name="copyright" translatable="yes">Copyright© 2023 Asa Lorentzen</property>
-    <property name="comments" translatable="yes">radio logging software for the Gnome desktop!</property>
-    <property name="website">Qsl.net/kl5is/loggixbeta</property>
-    <property name="website_label" translatable="yes">Webpage (on my site)</property>
+    <property name="comments" translatable="yes">Radio logging software for the Gnome desktop!</property>
+    <property name="website">https://qsl.net/kl5is/loggix.html</property>
+    <property name="website_label" translatable="yes">Website</property>
     <property name="authors">Asa Lorentzen
-Daniel Weinhold</property>
+With special thanks to:
+Daniel and Josh Weinhold </property>
     <property name="artists">Carlos Marrero</property>
     <property name="logo">../logo/loggix_icon_small.png</property>
     <property name="license_type">gpl-3-0</property>

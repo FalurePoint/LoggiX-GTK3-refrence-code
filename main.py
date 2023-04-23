@@ -153,6 +153,8 @@ class LoggixMain:
             self.gui_loggix_input_mode = self.builder.get_object("input_mode")
             self.gui_loggix_input_report = self.builder.get_object("input_report")
             self.gui_loggix_input_comment = self.builder.get_object("input_comment")
+            self.gui_loggix_comment_lable = self.builder.get_object("inputs_lable_comment")
+            self.gui_loggix_input_time = self.builder.get_object("input_time")
             self.gui_loggix_main_display = self.builder.get_object("gui_main_display")
             self.gui_loggix_next_page = self.builder.get_object("nav_next_button")
             self.gui_loggix_last_page = self.builder.get_object("nav_last_button")
@@ -160,6 +162,7 @@ class LoggixMain:
             self.gui_loggix_total_pages = self.builder.get_object("nav_page_display_two")
             self.gui_loggix_serial_input = self.builder.get_object("nav_serial_entry")
             self.gui_loggix_local_serial = self.builder.get_object("nav_serial_number_display")
+            self.gui_loggix_log_button = self.builder.get_object("nav_log_it_button")
 
             # options dropdown
             self.gui_options_dropdown_main = self.builder.get_object("options_dropdown")
@@ -177,6 +180,7 @@ class LoggixMain:
 
             # settings window
             self.gui_settings_open_debug_button = self.builder.get_object("settings_header_debug_button")
+
         except Exception as error:
             debug.report(f"An exception was caught and ignored while connecting to GUI but is being logged just in case: {error}")
             print("WARNING: reported unhandeled error while connecting to GUI to debug log, you might want to look in to this...")
@@ -364,7 +368,7 @@ class LoggixMain:
             input_data = log_file.read()
             serial_base = len(input_data.split('\n'))
             self.gui_loggix_local_serial.set_text(str(int((serial_base - 1) / 2)))
-            self.gui_loggix_serial_input.set_placeholder_text("Serial No. here...")
+            self.gui_loggix_serial_input.set_placeholder_text("TX Exchange here...")
             self.gui_loggix_input_date.set_text(str(datetime.utcnow().date()))
             utc = datetime.utcnow().time()
             utc = utc.strftime('%H:%M')
@@ -373,6 +377,7 @@ class LoggixMain:
             self.gui_loggix_input_freq.set_placeholder_text("double click for bands...")
             self.gui_loggix_input_power.set_placeholder_text("Enter contest power...")
             self.gui_loggix_input_mode.set_placeholder_text("Enter contest mode...")
+            self.gui_loggix_comment_lable.set_text("RX exchange")
         else:
             debug.report("contest mode disabled by user", display_location=False)
             self.gui_loggix_input_freq.set_placeholder_text("")
@@ -382,6 +387,7 @@ class LoggixMain:
             self.gui_loggix_input_report.set_text("")
             self.gui_loggix_input_date.set_text("")
             self.gui_loggix_serial_input.set_placeholder_text("Contest mode is off...")
+            self.gui_loggix_comment_lable.set_text("comment")
 
 #TODO----------------Dropdowns----------------------TODO
     def show_options(self, dummy):
@@ -421,12 +427,15 @@ class LoggixMain:
                     working_line = working_line + 1
                 print("out:" + search_output)
                 if search_output != "":
-                    self.global_display_is(search_output + "\n" + "DUPLICATE WARNING!")
+                    self.global_display_is(search_output + "\n" + "DUPLICATE WARNING! \n \n just keep typing to ignore this message and log the contact anyway or press ESC to return to standby.")
                     self.update_log_output(display_range=True, top=max_lines)
             self.gui_loggix_input_comment.grab_focus()
     def shift_serial(self, dummy):
         if contest_mode_state:
             self.gui_loggix_serial_input.grab_focus()
+    def shift_press_log(self, dummy):
+        self.gui_loggix_log_button.clicked()
+        self.gui_loggix_input_callsign.grab_focus()
 
     def band_select_70(self, band_option):
         self.gui_loggix_input_freq.set_text("420.000")
