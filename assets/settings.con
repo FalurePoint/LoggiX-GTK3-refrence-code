@@ -1,4 +1,4 @@
-current_log = assets/contacts.hlf
+current_log = /home/ace/Documents/GitHub/LoggiX-Logging-software/assets/contacts.hlfv2
 debug = true
 contest_qsd = true
 dupe_checking = true

@@ -33,11 +33,13 @@ parent_path = os.path.dirname(os.path.dirname(current_path))
 
 gui_files = parent_path + "/LoggiX-Logging-software/assets/UI/LoggiX_UI_2.0.XML"
 debug.report("4", display_location=False)
-log_path = parent_path + "/LoggiX-Logging-software/" + read_con.get("current_log")
+log_path = read_con.get("current_log")
+hlfio.set_log(log_path)
+hlfio.validate_file()
 
 
 # software version globals
-application_version = "1.4.2"
+application_version = "1.4.3"
 LoTw_connect_version = "N/A"
 QRZ_connect_version = "N/A"
 
@@ -56,14 +58,15 @@ qs_dropdowns = read_con.get("contest_qsd")
 # Opens the log file and returns the content and line totals in [0] and [1] respectively
 def read_logs(location=log_path):
     try:
-        log_file = open(location, "r")  # get the content
-        log_data = log_file.read()
-        log_file.close()
         with open(location, 'r') as f:  # get the line totals
             line_count = 0
+            final_output = ""
             for line in f:
                 line_count += 1
-        return log_data, line_count
+                hreadable = hlfio.create_human_readable(line_count)
+                if hreadable != "!EMPTY!":
+                    final_output = str(final_output) + str(hreadable) + "\n \n"
+        return final_output, line_count
     except Exception as error:
         debug.report(f"Failed to open Log file! error: {error}")
 
@@ -92,6 +95,7 @@ class LoggixMain:
             # set initial page number for the gui, it's always one...
             self.gui_loggix_current_page.set_text(" 1 ")
             self.gui_loggix_total_pages.set_text(str(self.calculate_pages(read_logs()[0])))
+
 
             # Write the log file to the global variable that the GUI text output for the log reads from and update.
             self.global_display_is(read_logs()[0])
@@ -134,7 +138,6 @@ class LoggixMain:
             self.global_display_is(read_logs()[0])
             self.update_log_output(display_range=True, top=max_lines)
             return True
-
 
     #  refresh data avalible from the gui (will not update gui output widgets)
     def get_objects_update(self):
@@ -181,6 +184,13 @@ class LoggixMain:
             # settings window
             self.gui_settings_open_debug_button = self.builder.get_object("settings_header_debug_button")
 
+            # debug tools
+            self.debug_refresh_display = self.builder.get_object("debug_input_force_refresh")
+            self.debug_flush_crash_log = self.builder.get_object("debug_input_flush_crash_reports")
+            self.debug_flush_contact_log = self.builder.get_object("debug_input_flush_qso_log")
+            self.debug_window_title = self.builder.get_object("debug_window_title")
+
+
         except Exception as error:
             debug.report(f"An exception was caught and ignored while connecting to GUI but is being logged just in case: {error}")
             print("WARNING: reported unhandeled error while connecting to GUI to debug log, you might want to look in to this...")
@@ -210,6 +220,9 @@ class LoggixMain:
 
     def about_software(self, dummy):
         About()
+
+    def open_debug_window(self):
+        debug_tools()
 
     def settings_gui(self, dummy):
         SettingsMenu()
@@ -270,9 +283,96 @@ class LoggixMain:
         print("Update to builder input objects finished")
         return time, date, freq, call, power, mode, report, comment, search_querry
 
-    # Adds an entry to the log file, currently lacking. Todo: finish incomplete entry detect.
-    def add_to_log(self, dummy):
+    def serial_id(self):
         if contest_mode_state:
+            log_file = open(log_path, 'r')
+            input_data = log_file.read()
+            serial_base = int(len(input_data.split('\n')))
+            self.gui_loggix_local_serial.set_text(str(int((serial_base))))
+
+    # prepare the data avalible from the inputs for entering in the log TODO: massive code clean up! I lost trak of what is what before I finished!
+    def prep_raw(self, values):
+        raw = values[0], values[1], values[2], values[3], values[4], values[5] # fill in what is already in the corect format
+        if "/" in values[6]: # if it is entered with a / spliting for hlfv2 is easy
+            rxrst = values[6].split("/")[0]
+            txrst = values[6].split("/")[1]
+        elif values[6].len() == 6: # assume it is a RST if it has 6 digits and split at three
+            rxrst = values[6][3:]
+            txrst = values[6][:3]
+        elif values[6].len() == 4: # if four then assume it is a RS report and split at two
+            rxrst = values[6][3:]
+            txrst = values[6][:3]
+        else:
+            debug.report("RST report format recognition failed. please submit it as RST/RST, RS/RS, RSTRST, or RSRS...")
+            rxrst = "!-missing-!"
+            txrst = "!-missing-!"
+        raw = raw + (rxrst,) + (txrst,)
+        if contest_mode_state:
+            if values[7] == "":
+                raw = raw + ("!-missing-!",) + ("!-missing-!",)
+            else:
+                raw = raw + ("!-missing-!",) + (values[7],)
+            if self.gui_loggix_serial_input.get_text() == "":
+                raw = raw + ("!-missing-!",)
+            else:
+                raw = raw + (self.gui_loggix_serial_input.get_text(),)
+            if self.gui_loggix_local_serial.get_text() == "":
+                raw = raw + ("!-missing-!",)
+            else:
+                raw = raw + (self.gui_loggix_local_serial.get_text(),)
+        else:
+            if values[7] == "":
+                raw = raw + ("!-missing-!",) + ("!-missing-!",) + ("!-missing-!",) + ("!-missing-!",)
+            else:
+                raw = raw + values[7] + ("!-missing-!",) + ("!-missing-!",) + ("!-missing-!",)
+        return raw
+
+    # check for dupelicates contacts in the log file.
+    def dupe_check(self):
+        dupe_awesome = r"""
+██████╗   ██╗      ██╗  ██████╗   ███████╗    ██╗
+██╔═══██╗██║      ██ ║  ██╔══██╗ ██  ╔════╝    ██ ║
+██║      ██║██║      ██ ║  ██████╔╝█████╗         ██║
+██║      ██║██║      ██ ║  ██╔═══╝    ██ ╔══╝          ╚═╝
+██████╔╝ ╚██████╔╝  ██║            ███████╗  ██╗
+╚══════╝       ╚═════╝      ╚═╝               ╚═══════╝   ╚═╝
+"""
+        if contest_mode_state:
+            if dupe_checking:
+                input_data = self.update_inputs()
+                log_lenth = read_logs()[1]
+                dupe_global = False
+
+                # full check to see if a exact dupe exists.
+                loopback = 0
+                dupes = ""
+                while loopback < log_lenth:
+                    loopback += 1
+                    if hlfio.get_raw(loopback) != "!EMPTY!":
+                        if hlfio.get("freq", loopback) == input_data[2] and hlfio.get("callsign", loopback) == input_data[3]:
+                            if hlfio.get("mode", loopback) == input_data[5] and hlfio.get("power", loopback) == input_data[4]:
+                                dupe_global = True
+                                dupes = dupes + hlfio.create_human_readable(loopback) + "\n"
+                if dupe_global:
+                    self.global_display_is(dupe_awesome + "\n\nDUPLICATE WARNING: Exact duplicates found!" + "\n \n" + dupes)
+                    self.update_log_output(display_range=True, top=max_lines)
+
+                #General use dupe check
+                loopback = 0
+                if not dupe_global:
+                    while loopback < log_lenth:
+                        loopback += 1
+                        if hlfio.get_raw(loopback) != "!EMPTY!":
+                            if hlfio.get("callsign", loopback) == input_data[3]:
+                                dupe_global = True
+                                dupes = dupes + hlfio.create_human_readable(loopback) + "\n"
+                    if dupe_global:
+                        self.global_display_is(dupe_awesome + " \n\nDUPLICATE WARNING! \nYou have other contacts with this station in your log from other bands/modes, please reveiw this before you continue to finalize this entry." + "\n \n" + dupes)
+                        self.update_log_output(display_range=True, top=max_lines)
+
+    # Adds an entry to the log file, currently lacking. TODO: finish incomplete entry detect.
+    def add_to_log(self, dummy):
+        if contest_mode_state: # set the passive clock time to current before writing to log
             utc = datetime.utcnow().time()
             utc = utc.strftime('%H:%M')
             self.gui_loggix_input_time.set_text(str(utc))
@@ -289,19 +389,8 @@ class LoggixMain:
                     gui_addons.Warning()
 
             if incomplete_detect is False:
-                log_entry = f"\n{values[0]} | {values[1]} | {values[2]} | {values[3]} | {''.join(char for char in values[4] if not char.isalpha())}w | {values[5]} | {values[6]} | {values[7]}\n"  # unpackes then compiles to a log entry line
-                log_file = open(log_path, 'r')
-                content = log_file.read()
-                log_file.close()
-                log_file = open(log_path, 'w')# opens the log and writes the data to the log file
-                log_file.write(str(log_entry) + content)
-                log_file.close()
-                if contest_mode_state:
-                    log_file = open(log_path, 'r')
-                    input_data = log_file.read()
-                    serial_base = int(len(input_data.split('\n')))
-                    print(serial_base)
-                    self.gui_loggix_local_serial.set_text(str(int((serial_base - 1) / 2)))
+                hlfio.write_to_log(self.prep_raw(values))
+                self.serial_id()
                 self.page_adjust("reset")
                 self.global_display_is(read_logs()[0])
                 self.update_log_output(display_range=True, top=max_lines)  # update gui
@@ -378,6 +467,7 @@ class LoggixMain:
             self.gui_loggix_input_power.set_placeholder_text("Enter contest power...")
             self.gui_loggix_input_mode.set_placeholder_text("Enter contest mode...")
             self.gui_loggix_comment_lable.set_text("RX exchange")
+            self.serial_id()
         else:
             debug.report("contest mode disabled by user", display_location=False)
             self.gui_loggix_input_freq.set_placeholder_text("")
@@ -414,21 +504,7 @@ class LoggixMain:
 
 #TODO--------------------misc GUI actions connect------------------------TODO
     def shift_comment(self, dummy):
-        if contest_mode_state:
-            if dupe_checking:
-                total_lines = read_logs()[1]  # get total lines
-                working_line = 0
-                search_output = ""  # clear the output for a fresh search
-                print(str(read_logs()[0]))
-                while working_line < total_lines:  # parse each line for search resualts
-                    resaults = search_function.line_has(log_path, working_line, self.gui_loggix_input_callsign.get_text())  # if this line has
-                    if resaults is True:
-                        search_output = search_output + str(search_function.get_line(log_path, working_line + 1))  # append new resaults from each positive line to the resault string
-                    working_line = working_line + 1
-                print("out:" + search_output)
-                if search_output != "":
-                    self.global_display_is(search_output + "\n" + "DUPLICATE WARNING! \n \n just keep typing to ignore this message and log the contact anyway or press ESC to return to standby.")
-                    self.update_log_output(display_range=True, top=max_lines)
+            self.dupe_check()
             self.gui_loggix_input_comment.grab_focus()
     def shift_serial(self, dummy):
         if contest_mode_state:
@@ -455,7 +531,7 @@ class LoggixMain:
         self.gui_loggix_input_freq.set_text("1.800")
 
     def power_select_5(self, band_option):
-        self.gui_loggix__input_power.set_text("5W")
+        self.gui_loggix_input_power.set_text("5W")
     def power_select_10(self, band_option):
         self.gui_loggix_input_power.set_text("10W")
     def power_select_50(self, band_option):
@@ -501,6 +577,21 @@ class About:
     def kill(self, dummy1, dummy2):
         self.loggix_about_main.get_toplevel().destroy()
 
+class debug_tools:
+    def __init__(self):
+        self.builder = gtk.Builder()
+        self.builder.add_from_file(gui_files)  # start the GTK Bulider and load the gui file
+        self.loggix_debug_main = self.builder.get_object("debug_tools")  # initiate gui window and display
+        self.loggix_debug_main.connect("delete-event", self.kill)
+        self.loggix_debug_main.show()
+        self.debug_refresh_display = self.builder.get_object("debug_input_force_refresh")
+        self.debug_flush_crash_log = self.builder.get_object("debug_input_flush_crash_reports")
+        self.debug_flush_contact_log = self.builder.get_object("debug_input_flush_qso_log")
+        self.debug_window_title = self.builder.get_object("debug_window_title")
+        self.debug_window_title.set_text(f"LoggiX {application_version} Debug tools (WARNING: these actions are unrestricted and ireversable you may damage you software/log data)")
+
+    def kill(self, dummy1, dummy2):
+        self.loggix_debug_main.get_toplevel().destroy()
 
 # settings menu main class (Unfinished LOW priority).
 class SettingsMenu:
