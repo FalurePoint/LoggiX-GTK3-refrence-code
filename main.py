@@ -154,23 +154,23 @@ class LoggixMain:
         message = f"""
 
         Hello! Welcome to loggix {application_version}!
-        This is the GTK3 1.0 design of LoggiX which I am abandoning and moving to a more modern build\
-        with GTK4 and Gnome Builder layout in favour of being a more usable and integrated software\
-        However even though this software is not usable in production yet, in the hopes of wetting the lips of the Linux\
-        Ham community at large and getting some feedback and maybe even some help on the GTK4 version when the base port is released.\
-        So feel free to look around! \
-        If you are interested in helping out (Or know anything at all about developing modern Gnome apps with Builder) you can reach out to me at:\
-        KL5IS@protonmail.com\
-        KL5IS@qsl.net\
-        \
-        THIS MESSAGE WILL ONLY SHOW ONCE! HIT ESC TO CLOSE IT.\
-        WARNING: this software is not ready to be used and the GTK3 version probably never will.\
-        Please do not try to use this in contesting... The Cabrillo export function is unfinished and will not work right it will end up embeding\
-        data about me rather then you in your log and it is quite a complex repair.\
-        \
-        \
-        The latest release notes (from before archiving the GTK3 version) are below:\
-        \
+        This is the GTK3 1.0 design of LoggiX which I am abandoning and moving to a more modern build
+        with GTK4 and Gnome Builder layout in favour of being a more usable and integrated software
+        However even though this software is not usable in production yet, in the hopes of wetting the lips of the Linux
+        Ham community at large and getting some feedback and maybe even some help on the GTK4 version when the base port is released.
+        So feel free to look around!
+        If you are interested in helping out (Or know anything at all about developing modern Gnome apps with Builder) you can reach out to me at:
+        KL5IS@protonmail.com
+        KL5IS@qsl.net
+
+        THIS MESSAGE WILL ONLY SHOW ONCE! HIT ESC TO CLOSE IT.
+        WARNING: this software is not ready to be used and the GTK3 version probably never will.
+        Please do not try to use this in contesting... The Cabrillo export function is unfinished and will not work right it will end up embeding
+        data about me rather then you in your log and it is quite a complex repair.
+
+
+        The latest release notes (from before archiving the GTK3 version) are below:
+        
          1.4.4 UPDATE NOTICE: cabrillo logs have been introduced for testing but are not funtional yet as they will assume test data for use instead of getting real user info.
 
           1. Improved duplicate checking including both exact AND similar detection systems
