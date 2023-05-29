@@ -1,4 +1,5 @@
 # Import extra scripts from extention folder
+import test_variables
 from assets.extentions import *
 debug.report("Loading new instance...", display_location=False)
 # import modules
@@ -27,32 +28,52 @@ except Exception as error:
 
 # TODO-------------------Global path locations------------------TODO
 # Global file paths
-debug.report("setting location globals...", display_location=False)
-current_path = os.path.abspath(__file__)
-parent_path = os.path.dirname(os.path.dirname(current_path))
-
-gui_files = parent_path + "/LoggiX-Logging-software/assets/UI/LoggiX_UI_2.0.XML"
-debug.report("4", display_location=False)
-log_path = read_con.get("current_log")
-hlfio.set_log(log_path)
-hlfio.validate_file()
-
-
-# software version globals
-application_version = "1.4.3"
-LoTw_connect_version = "N/A"
-QRZ_connect_version = "N/A"
-
-# predefine globals
-contest_mode_state = False
-veiw_page_root = 1
-starting_page_number = 1
-max_lines = 65
-global_display_string = ""
 
 # settings globals
-dupe_checking = read_con.get("dupe_checking")
-qs_dropdowns = read_con.get("contest_qsd")
+debug.report("Loading settings file...", display_location=False)
+try:
+    dupe_checking = read_con.get("dupe_checking")
+    qs_dropdowns = read_con.get("contest_qsd")
+    default_contest = read_con.get("contest_mode_on_startup")
+    display_welcome = read_con.get("show_welcome_message")
+    log_path = read_con.get("current_log")
+except Exception as error:
+    debug.report(f"Failed to load settings from file... error: {error}")
+    debug.report("Software closing with dignity.")
+    exit()
+
+if display_welcome:
+    read_con.change("current_log", f"/home/{os.getlogin()}/.local/share/applications/LoggiX/assets/contacts.hlfv2")
+    log_path = read_con.get("current_log")
+
+debug.report("Connecting globals...", display_location=False)
+try:
+    current_path = os.path.abspath(__file__)
+    parent_path = os.path.dirname(os.path.dirname(current_path))
+
+    gui_files = parent_path + "/LoggiX-Logging-software/assets/UI/LoggiX_UI_2.0.XML"
+    debug.report("4", display_location=False)
+    hlfio.set_log(log_path)
+    hlfio.validate_file()
+
+
+    # software version globals
+    application_version = "1.4.4"
+    LoTw_connect_version = "N/A"
+    QRZ_connect_version = "N/A"
+
+    # predefine globals
+    contest_mode_state = False
+    veiw_page_root = 1
+    starting_page_number = 1
+    max_lines = 65
+    global_display_string = ""
+except Exception as error:
+    debug.report(f"Failed to predefine globals. error: {error}", display_location=False)
+    if "[Errno 2] No such file or directory" in str(error):
+        debug.report('This might be due to an invalid file path in your settings file. are they all correct?', display_location=False)
+    debug.report("Software closing with dignity.", display_location=False)
+    exit()
 
 
 # Opens the log file and returns the content and line totals in [0] and [1] respectively
@@ -77,7 +98,7 @@ class LoggixMain:
     global log_path
     # Init or initialize is exactly what it sounds like, it initializes the gui and other major features
     def __init__(self):
-        debug.report("Starting Class LoggixMain()...",display_location=False)
+        debug.report("Starting Class LoggixMain()...", display_location=False)
         try:
             global gui_files
 
@@ -92,14 +113,23 @@ class LoggixMain:
             # Set the main window title.
             self.gui_title_banner.set_text(f"LoggiX {application_version}")
 
+            # force contest mode if the contest_mode_on_startup is true
+            if default_contest:
+                self.gui_options_contest_mode.set_active(True)
+                self.contest_mode_init("dummy")
+
+            if display_welcome:
+                # show the welcome message for the current version of LoggiX
+                self.display_welcome()
+                read_con.change("show_welcome_message", "false")
+            else:
+                # Write the log file to the global variable that the GUI text output for the log reads from and update.
+                self.global_display_is(read_logs()[0])
+                self.update_log_output(display_range=True, top=max_lines)
+
             # set initial page number for the gui, it's always one...
             self.gui_loggix_current_page.set_text(" 1 ")
             self.gui_loggix_total_pages.set_text(str(self.calculate_pages(read_logs()[0])))
-
-
-            # Write the log file to the global variable that the GUI text output for the log reads from and update.
-            self.global_display_is(read_logs()[0])
-            self.update_log_output(display_range=True, top=max_lines)
 
 
             # Begin main window and connect close signal from GUI.
@@ -120,6 +150,60 @@ class LoggixMain:
             print("Failed to initialize software... Exit code: 1")
             exit(1)
 
+    def display_welcome(self):
+        message = f"""
+
+        Hello! Welcome to loggix {application_version}!
+        This is the GTK3 1.0 design of LoggiX which I am abandoning and moving to a more modern build\
+        with GTK4 and Gnome Builder layout in favour of being a more usable and integrated software\
+        However even though this software is not usable in production yet, in the hopes of wetting the lips of the Linux\
+        Ham community at large and getting some feedback and maybe even some help on the GTK4 version when the base port is released.\
+        So feel free to look around! \
+        If you are interested in helping out (Or know anything at all about developing modern Gnome apps with Builder) you can reach out to me at:\
+        KL5IS@protonmail.com\
+        KL5IS@qsl.net\
+        \
+        THIS MESSAGE WILL ONLY SHOW ONCE! HIT ESC TO CLOSE IT.\
+        WARNING: this software is not ready to be used and the GTK3 version probably never will.\
+        Please do not try to use this in contesting... The Cabrillo export function is unfinished and will not work right it will end up embeding\
+        data about me rather then you in your log and it is quite a complex repair.\
+        \
+        \
+        The latest release notes (from before archiving the GTK3 version) are below:\
+        \
+         1.4.4 UPDATE NOTICE: cabrillo logs have been introduced for testing but are not funtional yet as they will assume test data for use instead of getting real user info.
+
+          1. Improved duplicate checking including both exact AND similar detection systems
+          2. Log format migration to hlf version 2.1 with improved access speeds allowing log sizes up to 1500 entrys before experiencing access lag!
+          3. Double click quick settings drop downs for frequncy, power, and mode
+          4. Settings functionality in settings file (the settings GUI is still unfinished though)
+          5. Log search moved to the context menu to be more out of the way
+          6. Date/time auto detect is UTC instead of local time now (sorry about that)
+          7. updated about/credits window (Josh, you may want to take a look at it!)
+
+
+
+        Now due to the fact that I am at the moment working though a lot of school, including learning two new programing
+        languages in addition to python, learning data analysis, and training for a ETT licence over the summer this software is still missing a few vital features
+        that you will want to know before using it.
+
+          1. THERE IS NO WAY TO EXPORT A CABRILLO LOG FILE (functionaly) YET! probably the bigest issue at the moment.
+          2. the settings GUI is not functional yet
+          3. it has no sync funtionality to qrz or LoTw at the moment
+          4. creating a new log file manualy is the only way to make a new log.
+
+
+        As said above, this is a WIP all these issues DO have fixes planed with most of them already in the works.
+        The only thing missing is time and help.
+        if you have experience with python or Gnome's GTK3 design system and like this project the best thing you can possably donate is a little bit
+        of your time and skill to help me get this project up to a "Big gun" worthy compition tool!
+        if your willing send me an email at KL5IS@qsl.net
+
+
+        Thanks for trying up my project! -Ace, KL5IS"""
+        self.calculate_pages(force_size="5")
+        self.global_display_is(message)
+        self.update_log_output()
 
     def update_time(self):
         current_utc = str(datetime.utcnow())
@@ -172,7 +256,7 @@ class LoggixMain:
             self.gui_options_power_dropdown = self.builder.get_object("power_dropdown")
             self.gui_options_mode_dropdown = self.builder.get_object("mode_dropdown")
             self.gui_options_band_dropdown = self.builder.get_object("band_dropdown")
-            self.gui_options_debug_mode = self.builder.get_object("debug_mode_toggle")
+            self.gui_options_contest_mode = self.builder.get_object("contest_mode_toggle")
             self.gui_options_setting_button = self.builder.get_object("options_settings_button")
             self.gui_options_contribue_button = self.builder.get_object("options_contribute_button")
             self.gui_options_website_button = self.builder.get_object("options_website_button")
@@ -197,26 +281,20 @@ class LoggixMain:
 
     # lots of little empty calls at the moment, GUI elements are connected though TODO: finish making, add debuging.
     def open_log_file(self):
-        dialog = gtk.FileChooserDialog(title="Please choose a file", parent=None, action=gtk.FileChooserAction.OPEN)
-        dialog.add_buttons(gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL, "Open", gtk.ResponseType.OK)
-        dialog.set_current_folder("~")
-        filter_text = gtk.FileFilter()
-        filter_text.set_name("Contest Logfile (.hlf-c)")
-        filter_text.add_mime_type("application/octet-stream")
-        filter_text.add_pattern("*.hlf-c")
-        filter_hlf = gtk.FileFilter()
-        filter_hlf.set_name("Logfile (.hlf)")
-        filter_hlf.add_mime_type("application/octet-stream")
-        filter_hlf.add_pattern("*.hlf")
-        dialog.add_filter(filter_hlf)
-        dialog.add_filter(filter_text)
+        dialog = Gtk.FileChooserDialog(title="Save File", parent=self.gui_loggix_main_window, action=Gtk.FileChooserAction.SAVE)
+        dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
+
         response = dialog.run()
-        if response == gtk.ResponseType.OK:
-            path = dialog.get_filename()
-        elif response == gtk.ResponseType.CANCEL:
-            print("File selection canceled.")
+        if response == Gtk.ResponseType.OK:
+            cab_file = dialog.get_filename().strip()
+            cab_extention_check = cab_file[-4:]
+            if cab_extention_check != ".log":
+                cab_file = cab_file + ".log"
+            cabrillo_write.begin_cabrillo(test_variables.user_data, cab_file)
+            cabrillo_write.write_cabrillo(cab_file)
         dialog.destroy()
-        return path
+
+
 
     def about_software(self, dummy):
         About()
@@ -234,12 +312,16 @@ class LoggixMain:
         webbrowser.open("https://qsl.net/kl5is")
 
     # devides the total lines buy the amount of lines allow per page defined by the global "max_lines"
-    def calculate_pages(self, input_data, dummy=None):
+    def calculate_pages(self, input_data=None, dummy=None, force_size=None):
         try:
+            if force_size != None:
+                pages = " " + str(force_size) + " "
+                return pages
             string_lines = len(input_data.split('\n'))  # find total lines in string by breaking at \n
             if string_lines < max_lines:  # less then one is over-ridden and 1 is used instead because you can't have data AND 0 pages... :P
                 return " 1 "
             else:
+                string_lines = len(input_data.split('\n'))  # find total lines in string by breaking at \n
                 pages = int(string_lines) // max_lines
                 pages = pages + 1
                 pages = " " + str(pages) + " "
@@ -409,7 +491,7 @@ class LoggixMain:
             while working_line < total_lines:  # parse each line for search resualts
                 resaults = search_function.line_has(log_path, working_line, str(search_input))  # if this line has
                 if resaults is True:
-                    search_output = search_output + str(search_function.get_line(log_path, working_line + 1))  # append new resaults from each positive line to the resault string
+                    search_output = search_output + str(hlfio.create_human_readable(working_line + 1)) + "\n" # append new resaults from each positive line to the resault string
                 working_line = working_line + 1
             print(search_output)
             self.global_display_is(search_output)
@@ -450,24 +532,32 @@ class LoggixMain:
 
     def contest_mode_init(self, checkbutton_state):
         global contest_mode_state
-        if checkbutton_state.get_active():
-            debug.report("contest mode enabled by user", display_location=False)
-            contest_mode_state = True
-            log_file = open(log_path, 'r')
-            input_data = log_file.read()
-            serial_base = len(input_data.split('\n'))
-            self.gui_loggix_local_serial.set_text(str(int((serial_base - 1) / 2)))
-            self.gui_loggix_serial_input.set_placeholder_text("TX Exchange here...")
-            self.gui_loggix_input_date.set_text(str(datetime.utcnow().date()))
-            utc = datetime.utcnow().time()
-            utc = utc.strftime('%H:%M')
-            self.gui_loggix_input_time.set_text(str(utc))
-            self.gui_loggix_input_report.set_text("59/59")
-            self.gui_loggix_input_freq.set_placeholder_text("double click for bands...")
-            self.gui_loggix_input_power.set_placeholder_text("Enter contest power...")
-            self.gui_loggix_input_mode.set_placeholder_text("Enter contest mode...")
-            self.gui_loggix_comment_lable.set_text("RX exchange")
-            self.serial_id()
+        if self.gui_options_contest_mode.get_active():
+            if hlfio.dataset() == "contesting":
+                debug.report("contest mode enabled by user", display_location=False)
+                contest_mode_state = True
+                log_file = open(log_path, 'r')
+                input_data = log_file.read()
+                serial_base = len(input_data.split('\n'))
+                self.gui_loggix_local_serial.set_text(str(int((serial_base - 1) / 2)))
+                self.gui_loggix_serial_input.set_placeholder_text("TX Exchange here...")
+                self.gui_loggix_input_date.set_text(str(datetime.utcnow().date()))
+                utc = datetime.utcnow().time()
+                utc = utc.strftime('%H:%M')
+                self.gui_loggix_input_time.set_text(str(utc))
+                self.gui_loggix_input_report.set_text("59/59")
+                self.gui_loggix_input_freq.set_placeholder_text("double click for bands...")
+                self.gui_loggix_input_power.set_placeholder_text("Enter contest power...")
+                self.gui_loggix_input_mode.set_placeholder_text("Enter contest mode...")
+                self.gui_loggix_comment_lable.set_text("RX exchange")
+                self.serial_id()
+            else:
+                dialog = WarningDialog(self.gui_loggix_main_window, "WARNING: this log is not a contest log. please open a contest log or create a new one to switch to contesting mode.")
+                response = dialog.run()
+                if response == Gtk.ResponseType.OK:
+                    self.gui_options_contest_mode.set_active(False)
+                    dialog.destroy()
+
         else:
             debug.report("contest mode disabled by user", display_location=False)
             self.gui_loggix_input_freq.set_placeholder_text("")
@@ -604,6 +694,35 @@ class SettingsMenu:
 
     def kill(self, dummy1, dummy2):
         self.loggix_about_main.get_toplevel().destroy()
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gio
+
+class WarningDialog(Gtk.Dialog):
+    def __init__(self, parent, message):
+        Gtk.Dialog.__init__(self, "Warning", parent, 0,
+                            (Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        self.set_default_size(150, 100)
+        self.set_border_width(10)
+
+        content_area = self.get_content_area()
+
+        # Create the warning icon
+        icon = Gtk.Image.new_from_icon_name("dialog-warning", Gtk.IconSize.DIALOG)
+
+        # Create the label with the warning message
+        label = Gtk.Label()
+        label.set_text(message)
+
+        # Add the icon and label to the dialog's content area
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        box.pack_start(icon, False, False, 0)
+        box.pack_start(label, True, True, 0)
+        content_area.add(box)
+
+        self.show_all()
+
 
 
 if __name__ == '__main__':

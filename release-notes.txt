@@ -1,0 +1,34 @@
+        Welcome to LoggiX! This notice will only show once.
+        This software is currently a very unstable work in progress.
+        Here is what to expect from LoggiX 1.4.4:
+        
+        1.4.4 UPDATE NOTICE: cabrillo logs have been introduced for testing but are not funtional yet as they will assume test data for use instead of getting real user info.
+
+          1. Improved duplicate checking including both exact AND similar detection systems
+          2. Log format migration to hlf version 2.1 with improved access speeds allowing log sizes up to 1500 entrys before experiencing access lag!
+          3. Double click quick settings drop downs for frequncy, power, and mode
+          4. Settings functionality in settings file (the settings GUI is still unfinished though)
+          5. Log search moved to the context menu to be more out of the way
+          6. Date/time auto detect is UTC instead of local time now (sorry about that)
+          7. updated about/credits window (Josh, you may want to take a look at it!)
+
+
+
+        Now due to the fact that I am at the moment working though a lot of school, including learning two new programing
+        languages in addition to python, learning data analysis, and training for a ETT licence over the summer this software is still missing a few vital features
+        that you will want to know before using it.
+
+          1. THERE IS NO WAY TO EXPORT A CABRILLO LOG FILE (functionaly) YET! probably the bigest issue at the moment.
+          2. the settings GUI is not functional yet
+          3. it has no sync funtionality to qrz or LoTw at the moment
+          4. creating a new log file manualy is the only way to make a new log.
+
+
+        As said above, this is a WIP all these issues DO have fixes planed with most of them already in the works.
+        The only thing missing is time and help.
+        if you have experience with python or Gnome's GTK3 design system and like this project the best thing you can possably donate is a little bit
+        of your time and skill to help me get this project up to a "Big gun" worthy compition tool!
+        if your willing send me an email at KL5IS@qsl.net
+
+
+        Thanks for trying up my project! -Ace, KL5IS

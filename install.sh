@@ -9,6 +9,7 @@ function install {
 	echo installing LoggiX...
 	mkdir ~/.local/share/applications/LoggiX
 	cp main.py ~/.local/share/applications/LoggiX
+	cp test_variables.py ~/.local/share/applications/LoggiX
 	cp -r assets ~/.local/share/applications/LoggiX
 
 	cd ~/.local/share/applications

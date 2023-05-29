@@ -1,9 +1,11 @@
-current_log = /home/ace/Documents/GitHub/LoggiX-Logging-software/assets/contacts.hlfv2
+current_log = waiting for inital file system scan...
 debug = true
 contest_qsd = true
 dupe_checking = true
+contest_mode_on_startup = true
+show_welcome_message = true
 
-settings prefixed with "#" are not functional yet.
+settings prefixed with "#" are not functional.
 ## ysu_bridge = false
 ## autofill = false
 ## contest_autofill = true
