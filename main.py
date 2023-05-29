@@ -51,7 +51,7 @@ try:
     current_path = os.path.abspath(__file__)
     parent_path = os.path.dirname(os.path.dirname(current_path))
 
-    gui_files = parent_path + "/LoggiX-Logging-software/assets/UI/LoggiX_UI_2.0.XML"
+    gui_files = parent_path + "/LoggiX/assets/UI/LoggiX_UI_2.0.XML"
     debug.report("4", display_location=False)
     hlfio.set_log(log_path)
     hlfio.validate_file()
